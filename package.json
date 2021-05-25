@@ -1,0 +1,9 @@
+{
+  "name": "pejvak",
+  "version": "1.0.0",
+  "description": "simple web server",
+  "main": "src/pejvak.js",
+  "types": "types/pejvak.d.ts",
+  "author": "rickali <rickali@tutanota.com>",
+  "license": "ISC"
+}
