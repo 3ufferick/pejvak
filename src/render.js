@@ -1,6 +1,5 @@
-const path = require("path");
-const loadFile = require("./loadfile");
-function render(file, template) {
+import loadFile from "./loadfile.js";
+export default function render(file, template) {
     return new Promise(function (resolve, reject) {
         loadFile(file)
             .then(data => {
@@ -28,4 +27,4 @@ function render(file, template) {
             });
     });
 }
-module.exports = render;
+// module.exports = render;

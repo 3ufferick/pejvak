@@ -1,16 +1,28 @@
-const http = require("http");
-const url = require("url");
-const fs = require("fs");
-const path = require("path");
-const render = require("./render");
+// const http = require("http");
+// const url = require("url");
+// const fs = require("fs");
+// const path = require("path");
+// const render = require("./render");
+// const { Console } = require("console");
+import http from "http"
+import url from "url"
+import fs from "fs"
+import path from "path"
+import render from "./render.js"
 
-class pejvak {
+export default class pejvak {
     server = undefined;
     settings = undefined;
     // routes = undefined;
     handlers = { "GET": {}, "POST": {} };
     binds = [];
 
+    /**
+     * creates a pejvak server instance
+     * @param settings settings object
+     * @param routes key/value object
+     * @param virtualPaths key/value object
+     */
     constructor(settings, routes, virtualPaths) {
         this.settings = settings;
 
@@ -19,6 +31,9 @@ class pejvak {
         for (const v in virtualPaths)
             this.bind(v, virtualPaths[v]);
     }
+    /**
+     * start a new server
+     */
     start() {
         this.server = http.createServer((req, res) => {
             // console.log("req", req);
@@ -33,8 +48,10 @@ class pejvak {
         console.log(`url: ${request.url}\npathName: ${pathName}\nfile: ${path.parse(pathName).name}\n`);
         // console.dir(path_);
         var handler = this.handlers[request.method][pathName];
-        if (handler && typeof handler == "function")
+        if (handler && typeof handler == "function") {
+            response.query = url.parse(request.url).query;
             handler(request, response);
+        }
         else if (handler && typeof handler == "string") {
             if (handler.split('.')[1].toLowerCase() == 'render')
                 render(path.normalize(this.settings.www + handler), "./view/main.template")
@@ -68,6 +85,12 @@ class pejvak {
             response.end();
         });
     }
+    /**
+     * 
+     * @param method "GET" or "POST"
+     * @param addr routing address begin with "/"
+     * @param callback callback function(request, response)
+     */
     handle(method, addr, callback) {
         this.handlers[method][addr] = callback;
     }
@@ -78,4 +101,4 @@ class pejvak {
         });
     }
 }
-module.exports = pejvak;
+// module.exports = pejvak;
