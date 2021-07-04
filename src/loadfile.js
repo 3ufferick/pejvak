@@ -2,11 +2,10 @@ import fs from "fs";
 export default function loadFile(filename) {
     return new Promise(function (resolve, reject) {
         fs.readFile(filename, function (err, data) {
-            if (err) {
+            if (err)
                 reject(err);
-                return;
-            }
-            resolve(data);
+            else
+                resolve(data);
         });
     });
 }

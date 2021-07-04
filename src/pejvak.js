@@ -2,7 +2,7 @@ import http from "http"
 import url from "url"
 import fs from "fs"
 import path from "path"
-import { render } from "./render.js"
+import * as render from "./render.js"
 
 export default class pejvak {
 	server = undefined;
@@ -17,6 +17,13 @@ export default class pejvak {
 			this.handlers["GET"][i] = [routes[i].file, routes[i].template];
 		for (const v in virtualPaths)
 			this.bind(v, virtualPaths[v]);
+
+		// this.defineProperty(http.ServerResponse, "renderHTML", {
+		// 	value: function renderHTML(params) {
+		// 		render.renderHTML(this, file, template, model);
+		// 	}
+		// });
+		// console.log(http.ServerResponse.toString());
 	}
 	start() {
 		this.server = http.createServer((request, response) => {
@@ -28,15 +35,18 @@ export default class pejvak {
 	handleRequests(request, response) {
 		var pathName = url.parse(request.url).pathname;
 		var handler = this.handlers[request.method][pathName];
-		if (handler && typeof handler == "function") {
+		//**handlers with a custom function*/
+		if (handler && typeof handler === "function") {
 			handler(request, response);
 		}
+		//**handlers loaded from routes file */
 		else if (handler && typeof handler === typeof []) {
 			if (handler[0].split('.')[1].toLowerCase() == 'render')
-				response.renderHTML(response, path.normalize(this.settings.www + handler[0]), this.settings.view + handler[1]);
+				render.renderHTML(response, path.normalize(this.settings.www + handler[0]), this.settings.view + handler[1]);
 			else
 				this.loadStaticFile(path.normalize(this.settings.www + handler[0]), response);
 		}
+		//**handler for other static files */
 		else {
 			var rep = pathName;
 			for (const i in this.binds)
@@ -63,6 +73,12 @@ export default class pejvak {
 		this.binds.push({ dst: destination, src: source });
 		this.binds.sort(function (a, b) {
 			return b.dst.length - a.dst.length;
+		});
+	}
+	defineProperty(obj, name, value) {
+		Object.defineProperty(obj, name, {
+			value,
+			writable: true
 		});
 	}
 }
