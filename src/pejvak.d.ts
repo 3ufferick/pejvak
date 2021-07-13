@@ -7,7 +7,7 @@ import http from "http"
  * @param virtualPaths key/value object
  */
 export default class pejvak {
-	constructor(settings: Object, routes: Object, virtualPaths: Object): void;
+	constructor(routes: Object, virtualPaths: Object): void;
 	/**
 	 * start a new pejvak server
 	 */

@@ -6,12 +6,12 @@ import * as render from "./render.js"
 
 export default class pejvak {
 	server = undefined;
-	settings = undefined;
+	// settings = {};
 	handlers = { "GET": {}, "POST": {} };
 	binds = [];
 
-	constructor(settings, routes, virtualPaths) {
-		this.settings = settings;
+	constructor(routes, virtualPaths) {
+		// this.settings = settings;
 
 		for (const i in routes)
 			this.handlers["GET"][i] = [routes[i].file, routes[i].template];
@@ -28,8 +28,8 @@ export default class pejvak {
 	start() {
 		this.server = http.createServer((request, response) => {
 			this.handleRequests(request, response);
-		}).listen(this.settings.port, () => {
-			console.log("server started on port", this.settings.port);
+		}).listen(global.settings.port, () => {
+			console.log("server started on port", global.settings.port);
 		});
 	}
 	handleRequests(request, response) {
@@ -42,17 +42,17 @@ export default class pejvak {
 		//**handlers loaded from routes file */
 		else if (handler && typeof handler === typeof []) {
 			if (handler[0].split('.')[1].toLowerCase() == 'render')
-				render.renderHTML(response, path.normalize(this.settings.www + handler[0]), this.settings.view + handler[1]);
+				render.renderHTML(response, path.normalize(global.settings.www + handler[0]), global.settings.view + handler[1]);
 			else
-				this.loadStaticFile(path.normalize(this.settings.www + handler[0]), response);
+				this.loadStaticFile(path.normalize(global.settings.www + handler[0]), response);
 		}
 		//**handler for other static files */
 		else {
-			var rep = pathName;
+			let rep = pathName;
 			for (const i in this.binds)
 				rep = rep.replace(this.binds[i].dst, this.binds[i].src);
 			if (rep == pathName)
-				rep = this.settings.www + pathName;
+				rep = global.settings.www + pathName;
 			this.loadStaticFile(path.normalize(rep), response);
 		}
 	}
