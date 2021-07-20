@@ -5,7 +5,7 @@ import * as vm from "vm";
 
 function renderFile(file, template, model) {
 	return new Promise(function (resolve, reject) {
-		loadFile(file)
+		loadFile(`${global.settings.www}/${file}`)
 			.then(data => {
 				const render = data.toString();
 				let regexp = /@part:(\w*)\s*{([\s\S]*)}\s*part:\1;/igm;
@@ -19,7 +19,7 @@ function renderFile(file, template, model) {
 					compile(ex[2], context);
 					parts[ex[1]] = context.ret;// compile(ex[2], context);
 				}
-				loadFile(template)
+				loadFile(`${global.settings.view}/${template}`)
 					.then(data => {
 						var result = data.toString();
 						let regexp = /{@(\w*)}/igm;
