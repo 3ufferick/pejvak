@@ -4,6 +4,7 @@ import fs from "fs"
 import path from "path"
 import * as render from "./render.js"
 import { pejvakError, pejvakHttpError } from "./errors.js"
+import domain from "domain"
 
 export default class pejvak {
 	server = undefined;
@@ -24,19 +25,13 @@ export default class pejvak {
 			try {
 				this.handleRequests(request, response);
 			} catch (err) {
-				// console.log("Hereeeeee", err);
-				if (err instanceof pejvakError)
-					this.error(response, err);
-				else
-					this.error(response, new pejvakHttpError(500, err));
+				this.error(err, response);
 			}
 		}).listen(global.settings.port, () => {
 			console.log("server started on port", global.settings.port);
 		});
 	}
 	handleRequests(request, response) {
-		// return new Promise((resolve, reject) => {
-		// try {
 		var pathName = url.parse(request.url).pathname;
 		var handler = this.handlers[request.method][pathName];
 		//**handlers with a custom function*/
@@ -69,8 +64,8 @@ export default class pejvak {
 		var _fs = fs.createReadStream(path).on('ready', (e) => {
 			_fs.pipe(response);
 		}).on('error', (err) => {
-			this.error(response, new pejvakHttpError(404));
-			// throw err;//new pejvakHttpError(404);
+			this.error(new pejvakHttpError(404), response);
+			// throw new pejvakHttpError(404);
 		});
 	}
 	handle(method, addr, callback) {
@@ -82,15 +77,12 @@ export default class pejvak {
 			return b.dst.length - a.dst.length;
 		});
 	}
-	error(response, error) {
-		if (error instanceof pejvakHttpError) {
-			// console.error(`${error.code}:${error.text}:${JSON.stringify(error, null, 2)}`);
-			response.writeHead(error.code, { "Content-Type": "text/html" });
-			response.write(`error ${error.code}: ${error.text}`);
-			response.end();
-		}
-		else
-			console.log("unhandled error:", error);
+	error(error, response) {
+		if (!(error instanceof pejvakHttpError))
+			error = new pejvakHttpError(500, error);
+		response.writeHead(error.code, { "Content-Type": "text/html" });
+		response.write(`${error.code}: ${error.message}`);
+		response.end();
 	}
 	defineProperty(obj, name, value) {
 		Object.defineProperty(obj, name, {

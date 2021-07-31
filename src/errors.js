@@ -21,14 +21,17 @@ export class pejvakError extends Error {
     //     }
     // }
 }
-export class pejvakHttpError extends pejvakError {
+export class pejvakHttpError extends Error {
     constructor(code, baseError) {
-        super(code, baseError);
+        super();
+        this.code = code;
+        this.message = baseError == undefined ? "" : baseError;
     }
-    get text() {
-        if (this.code in statusCodes)
-            return statusCodes[this.code];
-        else
-            return "Unknown";
+
+    get message() {
+        return this.code in statusCodes ? statusCodes[this.code] + this._message : "Unknown" + this._message;
+    }
+    set message(value) {
+        this._message = value == "" ? "" : " => " + value;
     }
 }
