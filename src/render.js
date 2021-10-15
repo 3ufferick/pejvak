@@ -41,16 +41,21 @@ function compile(code, context) {
 	let lines2 = "";
 	for (let i of lines) {
 		let l = i.trimStart();
-		if (l[0] == '@' || l[0] == '{' || l[0] == '}') {
-			if (l[0] == '@')
-				l = l.substr(1);
-			lines2 += `${l}`;
+		//---------این خط برای آبجکت های جاوا اسکریپت مشکل ساز میشد---------
+		// if (l[0] == '@' || l[0] == '{' || l[0] == '}') {
+		if (l[0] == '@') {
+			l = l.substr(1);
+			lines2 += `${l}\n`;
 		}
-		else if (l.substr(0, 4) != '<!--')
-			lines2 += `ret+=\`${i.replace(/`/g, "&#96;")}\n\`;`;
+		//---------برای کامنت های اچ تی ام ال مشکل ساز میشد--------------
+		// else if (l.substr(0, 4) != '<!--')
+		else if (l.substr(0, 5) != '<@--')
+			lines2 += `ret+=\`${i.replace(/`/g, "&#96;")}\n\`;\n`;
 	}
+	// console.log("lines2", lines2);
 	vm.runInNewContext(lines2, context);
 	// context.ret = context.ret.replace(/&#96;/g, '`');
+	// console.log("ran");
 }
 export function renderHTML(response, file, template, model) {
 	renderFile(file, template, model)
