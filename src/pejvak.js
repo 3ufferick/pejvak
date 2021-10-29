@@ -3,16 +3,17 @@ import url from "url"
 import fs from "fs"
 import path from "path"
 import * as render from "./render.js"
-import { pejvakError, pejvakHttpError } from "./errors.js"
-import domain from "domain"
+import { pejvakHttpError } from "./errors.js"
+import { EventEmitter } from "events";
 
-export default class pejvak {
+export default class pejvak extends EventEmitter {
 	server = undefined;
 	// settings = {};
 	handlers = { "GET": {}, "POST": {} };
 	binds = [];
 
 	constructor(routes, virtualPaths) {
+		super();
 		// this.settings = settings;
 
 		for (const i in routes)
@@ -30,6 +31,10 @@ export default class pejvak {
 		}).listen(global.settings.port, () => {
 			console.log("server started on port", global.settings.port);
 		});
+		this.server.on("close", () => { this.emit("closed"); });
+	}
+	stop(cb) {
+		this.server.close(cb);
 	}
 	handleRequests(request, response) {
 		var pathName = url.parse(request.url).pathname;
