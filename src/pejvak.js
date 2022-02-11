@@ -38,7 +38,7 @@ export default class pejvak extends EventEmitter {
 		this.server.close(cb);
 	}
 	handleRequests(request, response) {
-		const _url = new URL(request.url, "http://" + request.headers["host"]);
+		const _url = new URL(request.url, `http://${request.headers.host}`);
 		const pathName = _url.pathname;
 		const handler = this.handlers[request.method][pathName];
 		//**handlers with a custom function*/
