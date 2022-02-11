@@ -1,5 +1,6 @@
 import http from "http"
 import url from "url"
+// import { URL } from "url"
 import fs from "fs"
 import path from "path"
 import * as render from "./render.js"
@@ -37,8 +38,9 @@ export default class pejvak extends EventEmitter {
 		this.server.close(cb);
 	}
 	handleRequests(request, response) {
-		var pathName = url.parse(request.url).pathname;
-		var handler = this.handlers[request.method][pathName];
+		const _url = new URL(request.url, "http://" + request.headers["host"]);
+		const pathName = _url.pathname;
+		const handler = this.handlers[request.method][pathName];
 		//**handlers with a custom function*/
 		if (handler && typeof handler === "function") {
 			handler(request, response);
@@ -66,7 +68,7 @@ export default class pejvak extends EventEmitter {
 		}
 	}
 	loadStaticFile(path, response) {
-		var _fs = fs.createReadStream(path).on('ready', (e) => {
+		let _fs = fs.createReadStream(path).on('ready', (e) => {
 			_fs.pipe(response);
 		}).on('error', (err) => {
 			this.error(new pejvakHttpError(404), response);

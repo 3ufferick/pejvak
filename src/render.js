@@ -1,6 +1,5 @@
 import loadFile from "./loadfile.js";
 import http from "http"
-import { compileFunction } from "vm";
 import * as vm from "vm";
 
 function renderFile(file, template, model) {
@@ -12,7 +11,7 @@ function renderFile(file, template, model) {
 				let parts = {};
 				let ex;
 				while (ex = regexp.exec(render)) {
-					var context = {
+					const context = {
 						model: model,
 						ret: ""
 					};
@@ -21,7 +20,7 @@ function renderFile(file, template, model) {
 				}
 				loadFile(`${global.settings.view}/${template}`)
 					.then(data => {
-						var result = data.toString();
+						let result = data.toString();
 						let regexp = /{@(\w*)}/igm;
 						result = result.replace(regexp, function (match, g1) {
 							return parts[g1];
