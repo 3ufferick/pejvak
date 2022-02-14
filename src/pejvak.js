@@ -3,20 +3,18 @@ import url from "url"
 // import { URL } from "url"
 import fs from "fs"
 import path from "path"
-import * as render from "./render.js"
+import { renderFile } from "./render.js"
 import { pejvakHttpError } from "./errors.js"
-import { EventEmitter } from "events";
+import { errorMonitor, EventEmitter } from "events";
 
 export default class pejvak extends EventEmitter {
 	server = undefined;
-	// settings = {};
 	handlers = { "GET": {}, "POST": {} };
 	binds = [];
-
-	constructor(routes, virtualPaths) {
+	settings = {};
+	constructor(routes, virtualPaths, settings) {
 		super();
-		// this.settings = settings;
-
+		this.settings = settings;
 		for (const i in routes)
 			this.handlers["GET"][i] = [routes[i].file, routes[i].template];
 		for (const v in virtualPaths)
@@ -29,8 +27,8 @@ export default class pejvak extends EventEmitter {
 			} catch (err) {
 				this.error(err, response);
 			}
-		}).listen(global.settings.port, () => {
-			console.log("server started on port", global.settings.port);
+		}).listen(this.settings.port, () => {
+			console.log("server started on port", this.settings.port);
 		});
 		this.server.on("close", () => { this.emit("closed"); });
 	}
@@ -47,11 +45,10 @@ export default class pejvak extends EventEmitter {
 		}
 		//**handlers loaded from routes file */
 		else if (handler && typeof handler === typeof []) {
-			if (handler[0].split('.')[1].toLowerCase() == 'render')
-				// render.renderHTML(response, path.normalize(global.settings.www + handler[0]), global.settings.view + handler[1]);
-				render.renderHTML(response, handler[0], handler[1]);
+			if (handler[0].split('.')[1].toLowerCase() == this.settings.renderFileExtension)
+				this.render(response, handler[0], handler[1], this.settings);
 			else
-				this.loadStaticFile(path.normalize(global.settings.www + handler[0]), response);
+				this.loadStaticFile(path.normalize(this.settings.www + handler[0]), response);
 		}
 		//**handler for other static files */
 		else {
@@ -59,13 +56,26 @@ export default class pejvak extends EventEmitter {
 			for (const i in this.binds)
 				rep = rep.replace(this.binds[i].dst, this.binds[i].src);
 			if (rep == pathName)
-				rep = global.settings.www + pathName;
+				rep = this.settings.www + pathName;
 
-			if (global.settings.forbiden.includes(path.extname(rep)))
+			if (this.settings.forbiden.includes(path.extname(rep)))
 				throw new pejvakHttpError(403);
 
 			this.loadStaticFile(path.normalize(rep), response);
 		}
+	}
+	render(response, file, template, settings, model) {
+		renderFile(file, template, settings, model).then(result => {
+			response.writeHead(200, { "Content-Type": "text" });
+			response.write(result);
+			response.end();
+		}).catch(err => {
+			// console.log("inside err", err);
+			if (err.code == 'ENOENT')
+				this.error(new pejvakHttpError(404), response);
+			else
+				this.error(err, response);
+		});
 	}
 	loadStaticFile(path, response) {
 		let _fs = fs.createReadStream(path).on('ready', (e) => {
@@ -91,10 +101,10 @@ export default class pejvak extends EventEmitter {
 		response.write(`${error.code}: ${error.message}`);
 		response.end();
 	}
-	defineProperty(obj, name, value) {
-		Object.defineProperty(obj, name, {
-			value,
-			writable: true
-		});
-	}
+	// defineProperty(obj, name, value) {
+	// 	Object.defineProperty(obj, name, {
+	// 		value,
+	// 		writable: true
+	// 	});
+	// }
 }

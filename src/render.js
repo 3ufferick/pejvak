@@ -1,10 +1,9 @@
 import loadFile from "./loadfile.js";
-import http from "http"
 import * as vm from "vm";
 
-function renderFile(file, template, model) {
+export function renderFile(file, template, settings, model) {
 	return new Promise(function (resolve, reject) {
-		loadFile(`${global.settings.www}/${file}`)
+		loadFile(`${settings.www}/${file}`)
 			.then(data => {
 				const render = data.toString();
 				let regexp = /@part:(\w*)\s*{([\s\S]*)}\s*part:\1;/igm;
@@ -18,7 +17,7 @@ function renderFile(file, template, model) {
 					compile(ex[2], context);
 					parts[ex[1]] = context.ret;// compile(ex[2], context);
 				}
-				loadFile(`${global.settings.view}/${template}`)
+				loadFile(`${settings.view}/${template}`)
 					.then(data => {
 						let result = data.toString();
 						let regexp = /{@(\w*)}/igm;
@@ -51,31 +50,18 @@ function compile(code, context) {
 		else if (l.substr(0, 5) != '<@--')
 			lines2 += `ret+=\`${i.replace(/`/g, "&#96;")}\n\`;\n`;
 	}
-	// console.log("lines2", lines2);
 	vm.runInNewContext(lines2, context);
-	// context.ret = context.ret.replace(/&#96;/g, '`');
-	// console.log("ran");
 }
-export function renderHTML(response, file, template, model) {
-	renderFile(file, template, model)
-		.then(result => {
-			// response.writeHead(200, { "Content-Type": "text/html" });
-			response.writeHead(200, { "Content-Type": "text" });
-			response.write(result);
-			response.end();
-		})
-		.catch(err => {
-			console.error(err);
-		});
-}
+// export function renderHTML(response, file, template, settings, model) {
+// 	return renderFile(file, template, settings, model)
+// 		.then(result => {
+// 			return Promise.resolve(result);
+// 		})
+// 		.catch(err => {
+// 			return Promise.reject(err);
+// 		});
+// }
 
-// http.ServerResponse.prototype.renderHTML = renderHTML;
-http.ServerResponse.prototype.renderHTML = function (file, template, model) {
-	renderHTML(this, file, template, model);
-};
-// Object.defineProperty(http.ServerResponse, "renderH", {
-// 	value: function(file, template, model) {
-// 		return renderHTML(this, file, template, model);
-// 	},
-// 	writable: true
-// });
+// http.ServerResponse.prototype.renderHTML = function (file, template, settings, model) {
+// 	renderHTML(this, file, template, settings, model);
+// };
