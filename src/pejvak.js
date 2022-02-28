@@ -1,11 +1,10 @@
 import http from "http"
-import url from "url"
-// import { URL } from "url"
+import https from "https"
 import fs from "fs"
 import path from "path"
 import { renderFile } from "./render.js"
 import { pejvakHttpError } from "./errors.js"
-import { errorMonitor, EventEmitter } from "events";
+import { EventEmitter } from "events";
 
 export default class pejvak extends EventEmitter {
 	server = undefined;
@@ -29,6 +28,21 @@ export default class pejvak extends EventEmitter {
 			}
 		}).listen(this.settings.port, () => {
 			console.log("server started on port", this.settings.port);
+		});
+		this.server.on("close", () => { this.emit("closed"); });
+	}
+	startHTTPS() {
+		this.server = https.createServer({
+			key: fs.readFileSync(this.settings.https.keyFile),
+			cert: fs.readFileSync(this.settings.https.certFile)
+		}, (request, response) => {
+			try {
+				this.handleRequests(request, response);
+			} catch (err) {
+				this.error(err, response);
+			}
+		}).listen(this.settings.https.port, () => {
+			console.log("secure server started on port", this.settings.https.port);
 		});
 		this.server.on("close", () => { this.emit("closed"); });
 	}

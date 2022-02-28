@@ -12,13 +12,21 @@ export default class pejvak {
 	 * start a new pejvak server
 	 */
 	start(): void;
+	
+	/**
+	 * start a new pejvak https server
+	 */
+	startHTTPS(): void;
+
 	handleRequests: http.RequestListener;
+	
 	/**
 	 * load and stream a static html file
 	 * @param path static file path
 	 * @param response http.ServerResponse object
 	 */
 	loadStaticFile(path: String, response: http.ServerResponse): void;
+	
 	/**
 	 * handles http method with a given address and a callback function
 	 * @param method "GET" or "POST"
