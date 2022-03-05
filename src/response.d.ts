@@ -4,6 +4,7 @@ import http from "http"
  * pejvak response object
  */
 export default class pejvakResponse extends http.ServerResponse{
+    #setContentType(value): null;
     /**
      * 
      * @param {Number} statusCode http status code

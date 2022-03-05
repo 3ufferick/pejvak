@@ -4,7 +4,7 @@ import fs from "fs"
 import { renderFile } from "./render.js"
 import { pejvakHttpError } from "./errors.js"
 import pejvakRequest from "./request.js"
-import pejvakResponse from "./response.js"
+import {pejvakResponse} from "./response.js"
 
 export class pejvakRequestListener {
     pejvak;
@@ -27,8 +27,8 @@ export class pejvakRequestListener {
                 request.body += chunk;
             });
             request.on("close", () => {
-                this.runUses(request);
-                this.handleRequests(request, response);
+                this.#runUses(request);
+                this.#handleRequests(request, response);
             });
             response.on("error", (err) => {
                 this.error(err, response);
@@ -37,13 +37,13 @@ export class pejvakRequestListener {
             this.error(err, response);
         }
     }
-    runUses(req, res) {
+    #runUses(req, res) {
         for (let i of this.uses) {
             if (i.methods.indexOf(req.method) >= 0)
                 i.fn.apply(i.fn, [req, res]);
         }
     }
-    handleRequests(request, response) {
+    #handleRequests(request, response) {
         const _url = new URL(request.url, `http://${request.headers.host}`);
         const pathName = _url.pathname;
         const handler = this.handlers[request.method][pathName];
@@ -107,4 +107,3 @@ export class pejvakRequestListener {
         response.end();
     }
 }
-
