@@ -19,7 +19,6 @@ export class pejvakResponse extends http.ServerResponse {
         switch (typeof body) {
             case "string":
                 this.setContentType(mime.find("html") + "; charset=utf-8");
-                this.write(body);
                 break;
             case "object":
                 if (Buffer.isBuffer(body))
@@ -28,9 +27,9 @@ export class pejvakResponse extends http.ServerResponse {
                     this.setContentType(mime.find("json"));
                     body = JSON.stringify(body);
                 }
-                this.write(body);
                 break;
         }
+        this.write(body);
         return this;
     }
     // json(body) {
