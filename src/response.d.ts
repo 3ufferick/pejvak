@@ -13,6 +13,20 @@ export default class pejvakResponse extends http.ServerResponse{
     status(statusCode: String): pejvakResponse;
 
     /**
+     * 
+     * @param {String} data
+     * @returns {pejvakResponse} for chain calls
+     */
+    send(data: String): pejvakResponse;
+
+    /**
+     * 
+     * @param {Object} data json or binary
+     * @returns {pejvakResponse} for chain calls
+     */
+     send(data: Object): pejvakResponse;
+    
+    /**
      * end of http response
      */
     end(): void;

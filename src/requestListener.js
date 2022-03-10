@@ -32,7 +32,7 @@ export class pejvakRequestListener {
             });
             response.on("error", (err) => {
                 this.error(err, response);
-            })
+            });
         } catch (err) {
             this.error(err, response);
         }

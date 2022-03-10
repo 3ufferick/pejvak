@@ -9,10 +9,12 @@ export default class pejvakRequest extends http.IncomingMessage {
      * URL object
      */
     get URL(): URL;
+
     /**
-     * a shortcut to URL.searchParam.get() function
-     * @param {String} name searchParam name
-     * @returns {String}
+     * query object related to URL.searchParams; keys are all in lowerCase
+     * usage: query["key"] (returns string)
      */
-    query(name: String): String;
+    get query(): Object;
+
+    error(error: any): void;
 }
