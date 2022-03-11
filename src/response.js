@@ -29,6 +29,7 @@ export class pejvakResponse extends http.ServerResponse {
                 }
                 break;
         }
+        this.setHeader('Content-Length', Buffer.byteLength(body, 'utf-8'));
         this.write(body);
         return this;
     }

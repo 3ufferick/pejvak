@@ -4,7 +4,7 @@ import fs from "fs"
 import { renderFile } from "./render.js"
 import { pejvakHttpError } from "./errors.js"
 import pejvakRequest from "./request.js"
-import {pejvakResponse} from "./response.js"
+import { pejvakResponse } from "./response.js"
 
 export class pejvakRequestListener {
     pejvak;
@@ -73,11 +73,10 @@ export class pejvakRequestListener {
         }
     }
     loadStaticFile(path, response) {
-        let _fs = fs.createReadStream(path).on('ready', (e) => {
+        let _fs = fs.createReadStream(path).on('ready', () => {
             _fs.pipe(response);
         }).on('error', (err) => {
             this.error(new pejvakHttpError(404), response);
-            // throw new pejvakHttpError(404);
         });
     }
     render(response, file, template, settings, model) {
