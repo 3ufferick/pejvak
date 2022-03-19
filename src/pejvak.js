@@ -37,8 +37,25 @@ export default class pejvak extends EventEmitter {
 	handle(method, addr, callback) {
 		this.requestListener.handlers[method][addr] = callback;
 	}
-	use(methods, fn) {
-		this.requestListener.uses.push({ methods: methods, fn: fn });
+	use(routes, fn) {
+		const processPaths = (method, paths) => {
+			if (this.requestListener.uses[method] == undefined)
+				this.requestListener.uses[method] = [];
+			if (Array.isArray(paths))
+				for (const path of paths)
+					this.requestListener.uses[method].push({ path: path, fn: fn });
+			else if (typeof paths === "string")// && paths == "*")
+				this.requestListener.uses[method].push({ path: paths, fn: fn });
+		}
+		for (const r of routes) {
+			if (Array.isArray(r.methods))
+				for (const method of r.methods)
+					processPaths(method, r.paths);
+			else if (typeof r.methods === "string")// && r.methods == "*")
+				processPaths(r.methods, r.paths);
+		}
+		// console.log("uses", this.requestListener.uses);
+		// this.requestListener.uses.push({ routes: routes, fn: fn });
 	}
 	// defineProperty(obj, name, value) {
 	// 	Object.defineProperty(obj, name, {

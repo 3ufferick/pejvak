@@ -10,7 +10,7 @@ export class pejvakRequestListener {
     pejvak;
     binds = [];
     handlers = { "GET": {}, "POST": {} };
-    uses = [];
+    uses = {};// { "GET": {}, "POST": {} };
     constructor(pejvak, routes, virtualPaths) {
         this.pejvak = pejvak;
         for (const i in routes)
@@ -27,7 +27,7 @@ export class pejvakRequestListener {
                 request.body += chunk;
             });
             request.on("close", () => {
-                this.#runUses(request);
+                this.#runUses(request, response);
                 this.#handleRequests(request, response);
             });
             response.on("error", (err) => {
@@ -38,15 +38,22 @@ export class pejvakRequestListener {
         }
     }
     #runUses(req, res) {
-        for (let i of this.uses) {
-            if (i.methods.indexOf(req.method) >= 0)
-                i.fn.apply(i.fn, [req, res]);
-        }
+        // if (this.uses[req.method] !== undefined)
+        for (const m in this.uses)
+            if (m == req.method || m == "*")
+                for (const i of this.uses[m])
+                    if (i.path == "*" || i.path == req.URL.pathname)
+                        i.fn.apply(i.fn, [req, res]);
+        // for (let i of this.uses) {
+        //     if (i.methods.indexOf(req.method) >= 0)
+        //         i.fn.apply(i.fn, [req, res]);
+        // }
     }
     #handleRequests(request, response) {
-        const _url = new URL(request.url, `http://${request.headers.host}`);
-        const pathName = _url.pathname;
-        const handler = this.handlers[request.method][pathName];
+        // const _url = new URL(request.url, `http://${request.headers.host}`);
+        // const pathName = _url.pathname;
+        // const handler = this.handlers[request.method][pathName];
+        const handler = this.handlers[request.method][request.URL.pathname];
         //**handlers with a custom function*/
         if (handler && typeof handler === "function") {
             handler(request, response);
@@ -60,11 +67,11 @@ export class pejvakRequestListener {
         }
         //**handler for other static files */
         else {
-            let rep = pathName;
+            let rep = request.URL.pathname;
             for (const i in this.binds)
                 rep = rep.replace(this.binds[i].dst, this.binds[i].src);
-            if (rep == pathName)
-                rep = this.pejvak.settings.www + pathName;
+            if (rep == request.URL.pathname)
+                rep = this.pejvak.settings.www + request.URL.pathname;
 
             if (this.pejvak.settings.forbiden.includes(path.extname(rep)))
                 throw new pejvakHttpError(403);

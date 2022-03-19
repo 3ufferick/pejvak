@@ -37,7 +37,14 @@ import pejvakResponse from "./response.js"
 		 * @param callback callback function(request, response)
 		 */
 		handle(method: String, addr: String, callback: pejvakListener);
-	
+
+		/**
+		 * 
+		 * @param {Array} routes array of {method: ["GET", "POST", ...], paths: ["./path1", ...]}
+		 * or array of {method: "* " , paths: "*"}
+		 * @param {function(request, response)} fn function(request, response)
+		 */
+		use(routes: Array, fn: pejvakListener);
 	}
 }
  

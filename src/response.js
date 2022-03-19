@@ -1,6 +1,5 @@
 import http from "http"
 import { renderFile } from "./render.js"
-import { pejvakHttpError } from "./errors.js"
 import mime from "./mimetypes.js"
 
 export class pejvakResponse extends http.ServerResponse {
