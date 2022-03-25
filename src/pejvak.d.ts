@@ -8,7 +8,7 @@ import pejvakResponse from "./response.js"
  * @param virtualPaths key/value object
  */
  declare module 'pejvak' {
-	type pejvakListener = (req: pejvakRequest, res: pejvakResponse) => void;
+	export type pejvakListener = (req: pejvakRequest, res: pejvakResponse) => void;
 	export default class pejvak {
 		constructor(routes: Object, virtualPaths: Object, settings: Object): void;
 		/**

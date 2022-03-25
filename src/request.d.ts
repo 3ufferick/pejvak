@@ -16,5 +16,10 @@ export default class pejvakRequest extends http.IncomingMessage {
      */
     get query(): Object;
 
+    /**
+     * cookies object
+     */
+    get cookies(): Object;
+    
     error(error: any): void;
 }
