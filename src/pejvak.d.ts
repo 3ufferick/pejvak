@@ -25,26 +25,38 @@ import pejvakResponse from "./response.js"
 		
 		/**
 		 * load and stream a static html file
-		 * @param path static file path
-		 * @param response http.ServerResponse object
+		 * @param {string} path static file path
+		 * @param {string} response http.ServerResponse object
 		 */
-		loadStaticFile(path: String, response: http.ServerResponse): void;
+		loadStaticFile(path: string, response: http.ServerResponse): void;
 		
 		/**
-		 * handles http method with a given address and a callback function
-		 * @param method "GET" or "POST"
-		 * @param addr routing address begin with "/"
-		 * @param callback callback function(request, response)
+		 * handles http method with a given address and a function
+		 * @param {string} method "GET" or "POST" or ...
+		 * @param {string} addr routing address begin with "/"
+		 * @param {(req, res) => void} fn function(req, res)
 		 */
-		handle(method: String, addr: String, callback: pejvakListener);
+		handle(method: string, addr: string, fn: pejvakListener);
+
+		// /**
+		//  * runs function for all http methods with all route given addresses
+		//  * @param {(req, res) => void} fn function(req, res)
+		//  */
+		// handle(fn: pejvakListener);
 
 		/**
-		 * 
-		 * @param {Array} routes array of {method: ["GET", "POST", ...], paths: ["./path1", ...]}
-		 * or array of {method: "* " , paths: "*"}
-		 * @param {function(request, response)} fn function(request, response)
+		 * run functions before handle methods
+		 * @param {(req: pejvakRequest, res: pejvakResponse) => void} fn function(req, res)
 		 */
-		use(routes: Array, fn: pejvakListener);
+		before(fn: (req: pejvakRequest, res: pejvakResponse) => void)
+		
+		// /**
+		//  * 
+		//  * @param {Array} routes array of {method: ["GET", "POST", ...], paths: ["./path1", ...]}
+		//  * or array of {method: "* " , paths: "*"}
+		//  * @param {(req, res) => void} fn function(req, res)
+		//  */
+		// use(routes: Array, fn: pejvakListener);
 	}
 }
  

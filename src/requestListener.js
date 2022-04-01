@@ -9,8 +9,12 @@ import { pejvakResponse } from "./response.js"
 export class pejvakRequestListener {
     pejvak;
     binds = [];
-    handlers = { "GET": {}, "POST": {} };
-    uses = {};// { "GET": {}, "POST": {} };
+    handlers = {
+        "GET": {}, "POST": {}, "HEAD": {}, "PUT": {}, "DELETE": {},
+        "CONNECT": {}, "OPTIONS": {}, "TRACE": {}, "PATCH": {}
+    };
+    uses = {};
+    befores = [];
     constructor(pejvak, routes, virtualPaths) {
         this.pejvak = pejvak;
         for (const i in routes)
@@ -18,23 +22,25 @@ export class pejvakRequestListener {
         for (const v in virtualPaths)
             this.bind(v, virtualPaths[v]);
     }
-    listener = (request, response) => {
+    listener = (req, res) => {
         try {
-            Object.setPrototypeOf(request, pejvakRequest.prototype);
-            Object.setPrototypeOf(response, pejvakResponse.prototype);
-            request.body = "";
-            request.on("data", (chunk) => {
-                request.body += chunk;
+            Object.setPrototypeOf(req, pejvakRequest.prototype);
+            Object.setPrototypeOf(res, pejvakResponse.prototype);
+            req.body = "";
+            req.on("data", (chunk) => {
+                req.body += chunk;
             });
-            request.on("close", () => {
-                this.#runUses(request, response);
-                this.#handleRequests(request, response);
+            req.on("close", () => {
+                // this.#runUses(req, res);
+                this.#reqType(req);
+                this.#runBefores(req, res);
+                this.#runHandles(req, res);
             });
-            response.on("error", (err) => {
-                this.error(err, response);
+            res.on("error", (err) => {
+                this.error(err, res);
             });
         } catch (err) {
-            this.error(err, response);
+            this.error(err, res);
         }
     }
     #runUses(req, res) {
@@ -49,34 +55,57 @@ export class pejvakRequestListener {
         //         i.fn.apply(i.fn, [req, res]);
         // }
     }
-    #handleRequests(request, response) {
-        // const _url = new URL(request.url, `http://${request.headers.host}`);
-        // const pathName = _url.pathname;
-        // const handler = this.handlers[request.method][pathName];
-        const handler = this.handlers[request.method][request.URL.pathname];
-        //**handlers with a custom function*/
-        if (handler && typeof handler === "function") {
-            handler(request, response);
-        }
-        //**handlers loaded from routes file */
-        else if (handler && typeof handler === typeof []) {
-            if (handler[0].split('.')[1].toLowerCase() == this.pejvak.settings.renderFileExtension)
-                response.render(handler[0], handler[1], this.pejvak.settings);
-            else
-                this.loadStaticFile(path.normalize(this.pejvak.settings.www + handler[0]), response);
+    #reqType(req) {
+        if (this.handlers[req.method] && this.handlers[req.method][req.URL.pathname])
+            req.handler = this.handlers[req.method][req.URL.pathname];
+        if (req.handler) {
+            //**handlers with a custom function*/
+            if (typeof req.handler === "function")
+                req.handlerType = "function";
+            //**handlers loaded from routes file with template */
+            else if (typeof req.handler === typeof []) {
+                if (req.handler[0].split('.')[1].toLowerCase() == this.pejvak.settings.renderFileExtension)
+                    req.handlerType = "render";
+                else
+                    req.handlerType = "handlerStatic";
+            }
         }
         //**handler for other static files */
+        else
+            req.handlerType = "static";
+    }
+    #runBefores(req, res) {
+        for (let i of this.befores) {
+            if (res.writableEnded == true)
+                return;
+            i.apply(null, [req, res]);
+        }
+    }
+    #runHandles(req, res) {
+        if (res.writableEnded == true)
+            return;
+        // if (req.handler !== undefined) {
+        //**handlers with a custom function*/
+        if (req.handlerType === "function")
+            req.handler.apply(null, [req, res]);
+        //**handlers loaded from routes file with template */
+        else if (req.handlerType === "render")
+            res.render(req.handler[0], req.handler[1], this.pejvak.settings);
+        else if (req.handlerType === "handlerStatic")
+            this.loadStaticFile(path.normalize(this.pejvak.settings.www + req.handler[0]), res);
+        // }
+        //**handler for other static files */
         else {
-            let rep = request.URL.pathname;
+            let rep = req.URL.pathname;
             for (const i in this.binds)
                 rep = rep.replace(this.binds[i].dst, this.binds[i].src);
-            if (rep == request.URL.pathname)
-                rep = this.pejvak.settings.www + request.URL.pathname;
+            if (rep == req.URL.pathname)
+                rep = this.pejvak.settings.www + req.URL.pathname;
 
             if (this.pejvak.settings.forbiden.includes(path.extname(rep)))
                 throw new pejvakHttpError(403);
 
-            this.loadStaticFile(path.normalize(rep), response);
+            this.loadStaticFile(path.normalize(rep), res);
         }
     }
     loadStaticFile(path, response) {
@@ -105,11 +134,11 @@ export class pejvakRequestListener {
             return b.dst.length - a.dst.length;
         });
     }
-    error(error, response) {
-        if (!(error instanceof pejvakHttpError))
-            error = new pejvakHttpError(500, error);
-        response.writeHead(error.code, { "Content-Type": "text/html" });
-        response.write(`${error.code}: ${error.message}`);
-        response.end();
+    error(err, res) {
+        if (!(err instanceof pejvakHttpError))
+            err = new pejvakHttpError(500, err);
+        res.writeHead(err.code, { "Content-Type": "text/html" });
+        res.write(`${err.code}: ${err.message}`);
+        res.end();
     }
 }

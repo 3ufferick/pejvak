@@ -14,10 +14,10 @@ export default class pejvakResponse extends http.ServerResponse {
 
     /**
      * 
-     * @param {String} data
+     * @param {string} data
      * @returns {pejvakResponse} for chain calls
      */
-    send(data: String): pejvakResponse;
+    send(data: string): pejvakResponse;
 
     /**
      * 
