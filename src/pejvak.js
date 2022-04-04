@@ -36,41 +36,36 @@ export default class pejvak extends EventEmitter {
 		this.server.close(cb);
 	}
 	handle() {
-		const processPaths = (method, paths, before, fn) => {
+		const processPaths = (method, paths, args, before, fn) => {
 			if (this.requestListener.handlers[method] == undefined)
 				this.requestListener.handlers[method] = {};
 			if (Array.isArray(paths))
 				for (const path of paths)
-					this.requestListener.handlers[method][path] = { method: method, path: path, before: before, fn: fn };
+					this.requestListener.handlers[method][path] = { method: method, path: path, args:args, before: before, fn: fn };
 			else if (typeof paths === "string")
-				this.requestListener.handlers[method][paths] = { method: method, path: paths, before: before, fn: fn };
+				this.requestListener.handlers[method][paths] = { method: method, path: paths, args:args, before: before, fn: fn };
 		}
 		/**
-		 * handle(method, addr, fn)
+		 * handle(method, paths, fn)
 		 */
 		if (arguments.length == 3 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
 			&& typeof arguments[2] == "function") {
-			// if (this.requestListener.handlers[arguments[0]] === undefined)
-			// 	this.requestListener.handlers[arguments[0]] = {};
-			processPaths(arguments[0], arguments[1], null, arguments[2]);
-			// this.requestListener.handlers[arguments[0]][arguments[1]] = arguments[2];
+			processPaths(arguments[0], arguments[1], null, null, arguments[2]);
 		}
 		/**
-		 * handle(method, addr, before, fn)
+		 * handle(method, paths, before, fn)
 		 */
 		if (arguments.length == 4 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
 			&& typeof arguments[2] == "function" && typeof arguments[3] == "function") {
-			// if (this.requestListener.handlers[arguments[0]] === undefined)
-			// 	this.requestListener.handlers[arguments[0]] = {};
-			processPaths(arguments[0], arguments[1], arguments[2], arguments[3]);
-			// this.requestListener.handlers[arguments[0]][arguments[1]] = arguments[2];
+			processPaths(arguments[0], arguments[1], null, arguments[2], arguments[3]);
 		}
-		// /**
-		//  * handle(fn)
-		//  */
-		// else if (arguments.length == 1 && typeof arguments[0] == "function") {
-		// 	processPaths("*", "*", arguments[0]);
-		// }
+		/**
+		 * handle(method, paths, args, before, fn)
+		 */
+		 if (arguments.length == 5 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
+		 && typeof arguments[2] == "object" && typeof arguments[3] == "function" && typeof arguments[4] == "function") {
+		 processPaths(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+	 }
 	}
 	before(fn) {
 		// console.log("app:before");
