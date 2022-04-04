@@ -30,6 +30,11 @@ export default class pejvakRequest extends http.IncomingMessage {
      * the type of handler object
      */
     handlerType: ["function", "render", "handlerStatic", "static"];
+
+	 /**
+	  * the body of request object
+	  */
+	 body: string;
     
     error(error: any): void;
 }

@@ -4,6 +4,11 @@ import http from "http"
  * pejvak response object
  */
 export default class pejvakResponse extends http.ServerResponse {
+	/** 
+	 * a global model object which merges with the model argument of render function befor rendering
+	*/
+	model: Object;
+
 	#setContentType(value): null;
 	/**
 	 * 

@@ -26,6 +26,10 @@ export class pejvakRequestListener {
 		try {
 			Object.setPrototypeOf(req, pejvakRequest.prototype);
 			Object.setPrototypeOf(res, pejvakResponse.prototype);
+
+			/**set global model object*/
+			res.model = {};
+
 			req.body = "";
 			req.on("data", (chunk) => {
 				req.body += chunk;
@@ -64,9 +68,9 @@ export class pejvakRequestListener {
 			//**handlers loaded from routes file with template */
 			else if (typeof req.handler === typeof []) {
 				if (req.handler[0].split('.')[1].toLowerCase() == this.pejvak.settings.renderFileExtension)
-					req.handlerType = "render";
+					req.handlerType = "autoRender";
 				else
-					req.handlerType = "handlerStatic";
+					req.handlerType = "autoStatic";
 			}
 		}
 		//**handler for other static files */
@@ -91,9 +95,9 @@ export class pejvakRequestListener {
 			req.handler.fn.apply(req.handler, [req, res]);
 		}
 		//**handlers loaded from routes file with template */
-		else if (req.handlerType === "render")
+		else if (req.handlerType === "autoRender") {
 			res.render(req.handler[0], req.handler[1], this.pejvak.settings);
-		else if (req.handlerType === "handlerStatic")
+		} else if (req.handlerType === "autoStatic")
 			this.loadStaticFile(path.normalize(this.pejvak.settings.www + req.handler[0]), res);
 		// }
 		//**handler for other static files */

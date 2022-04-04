@@ -1,12 +1,26 @@
 import http from "http"
 import { renderFile } from "./render.js"
 import mime from "./mimetypes.js"
-import { isString } from "util";
 
 export class pejvakResponse extends http.ServerResponse {
-	constructor() {
-		super();
-	}
+	// initModel() {
+		// super();
+		// Object.defineProperty(this, "model", {
+		// 	value: {},
+		// 	enumerable: true,
+		// 	writable: true,
+		// 	configurable: true,
+		// });
+		// this._model = { b: "2" };
+	// }
+	// model = {};
+	// _model = {};
+	// get model() {
+	// 	return this._model;// ?? {};
+	// }
+	// set model(value) {
+	// 	this._model = value;
+	// }
 	setContentType(value) {
 		if (this.getHeader("content-type") == undefined)
 			this.setHeader("content-type", value);
@@ -37,12 +51,10 @@ export class pejvakResponse extends http.ServerResponse {
 	//     this.#setContentType(mime.find("json"));
 	//     return JSON.stringify(body);
 	// }
-	render(file, template, settings, model) {
+	render(file, template, settings, model = {}) {
+		Object.assign(model, this.model);
 		renderFile(file, template, settings, model).then(result => {
 			this.status(200).send(result).end();
-			// this.writeHead(200, { "Content-Type": "text" });
-			// this.write(result);
-			// this.end();
 		}).catch(err => {
 			this.emit("error", err);
 			// if (err.code == 'ENOENT')
