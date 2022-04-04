@@ -117,19 +117,20 @@ export class pejvakRequestListener {
 			this.error(new pejvakHttpError(404), response);
 		});
 	}
-	render(response, file, template, settings, model) {
-		renderFile(file, template, settings, model).then(result => {
-			response.writeHead(200, { "Content-Type": "text" });
-			response.write(result);
-			response.end();
-		}).catch(err => {
-			// console.log("inside err", err);
-			if (err.code == 'ENOENT')
-				this.error(new pejvakHttpError(404), response);
-			else
-				this.error(err, response);
-		});
-	}
+	/**Deprecated */
+	// render(response, file, template, settings, model) {
+	// 	renderFile(file, template, settings, model).then(result => {
+	// 		response.writeHead(200, { "Content-Type": "text" });
+	// 		response.write(result);
+	// 		response.end();
+	// 	}).catch(err => {
+	// 		// console.log("inside err", err);
+	// 		if (err.code == 'ENOENT')
+	// 			this.error(new pejvakHttpError(404), response);
+	// 		else
+	// 			this.error(err, response);
+	// 	});
+	// }
 	bind(destination, source) {
 		this.binds.push({ dst: destination, src: source });
 		this.binds.sort(function (a, b) {
