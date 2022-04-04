@@ -10,12 +10,13 @@ export function renderFile(file, template, settings, model) {
 				let parts = {};
 				let ex;
 				while (ex = regexp.exec(render)) {
-					const context = {
-						model: model,
-						ret: ""
-					};
-					compile(ex[2], context);
-					parts[ex[1]] = context.ret;// compile(ex[2], context);
+					// const context = {
+					// 	model: model,
+					// 	ret: ""
+					// };
+					// compile(ex[2], context);
+					// parts[ex[1]] = context.ret;
+					parts[ex[1]] = ex[2];
 				}
 				loadFile(`${settings.view}/${template}`)
 					.then(data => {
@@ -24,7 +25,15 @@ export function renderFile(file, template, settings, model) {
 						result = result.replace(regexp, function (match, g1) {
 							return parts[g1];
 						});
-						resolve(result);
+						/**move compile from file to template:
+						 * 1: higher performance due to reducing compile calls to just one time.
+						 * 2+ rendering global model object also for tempate file */
+						const context = {
+							model: model,
+							ret: ""
+						}
+						compile(result, context);
+						resolve(context.ret);
 					}).catch(err => {
 						reject(err);
 					});
