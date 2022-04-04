@@ -90,8 +90,11 @@ export class pejvakRequestListener {
 		// if (req.handler !== undefined) {
 		//**handlers with a custom function*/
 		if (req.handlerType === "function") {
-			if (req.handler.before != null)
+			if (req.handler.before != null) {
 				req.handler.before.apply(req.handler, [req, res]);
+				if (res.writableEnded == true)
+					return;
+			}
 			req.handler.fn.apply(req.handler, [req, res]);
 		}
 		//**handlers loaded from routes file with template */
