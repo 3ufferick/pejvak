@@ -26,9 +26,10 @@ declare module 'pejvak' {
 		/**
 		 * load and stream a static html file
 		 * @param {string} path static file path
-		 * @param {string} response http.ServerResponse object
+		 * @param {pejvakRequest} req pejvakRequest
+		 * @param {pejvakResponse} res pejvakResponse
 		 */
-		loadStaticFile(path: string, response: http.ServerResponse): void;
+		loadStaticFile(path: string, req: pejvakRequest, res: pejvakResponse): void;
 
 		/**
 		 * handles http method with a given address and a function

@@ -1,7 +1,6 @@
 import path from "path"
 import fs from "fs"
 
-import { renderFile } from "./render.js"
 import { pejvakHttpError } from "./errors.js"
 import pejvakRequest from "./request.js"
 import { pejvakResponse } from "./response.js"
@@ -47,18 +46,19 @@ export class pejvakRequestListener {
 			this.error(err, res);
 		}
 	}
-	#runUses(req, res) {
-		// if (this.uses[req.method] !== undefined)
-		for (const m in this.uses)
-			if (m == req.method || m == "*")
-				for (const i of this.uses[m])
-					if (i.path == "*" || i.path == req.URL.pathname)
-						i.fn.apply(i.fn, [req, res]);
-		// for (let i of this.uses) {
-		//     if (i.methods.indexOf(req.method) >= 0)
-		//         i.fn.apply(i.fn, [req, res]);
-		// }
-	}
+	/**Deprecated */
+	// #runUses(req, res) {
+	// 	// if (this.uses[req.method] !== undefined)
+	// 	for (const m in this.uses)
+	// 		if (m == req.method || m == "*")
+	// 			for (const i of this.uses[m])
+	// 				if (i.path == "*" || i.path == req.URL.pathname)
+	// 					i.fn.apply(i.fn, [req, res]);
+	// 	// for (let i of this.uses) {
+	// 	//     if (i.methods.indexOf(req.method) >= 0)
+	// 	//         i.fn.apply(i.fn, [req, res]);
+	// 	// }
+	// }
 	#reqType(req) {
 		req.handler = this.handlers[req.method]?.[req.URL.pathname];
 		if (req.handler) {
@@ -101,7 +101,7 @@ export class pejvakRequestListener {
 		else if (req.handlerType === "autoRender") {
 			res.render(req.handler[0], req.handler[1], this.pejvak.settings);
 		} else if (req.handlerType === "autoStatic")
-			this.loadStaticFile(path.normalize(this.pejvak.settings.www + req.handler[0]), res);
+			this.loadStaticFile(path.normalize(this.pejvak.settings.www + req.handler[0]), req, res);
 		// }
 		//**handler for other static files */
 		else {
@@ -114,30 +114,45 @@ export class pejvakRequestListener {
 			if (this.pejvak.settings.forbiden.includes(path.extname(rep)))
 				throw new pejvakHttpError(403);
 
-			this.loadStaticFile(path.normalize(rep), res);
+			this.loadStaticFile(path.normalize(rep), req, res);
 		}
 	}
-	loadStaticFile(path, response) {
-		let _fs = fs.createReadStream(path).on('ready', () => {
-			_fs.pipe(response);
-		}).on('error', (err) => {
-			this.error(new pejvakHttpError(404), response);
+	loadStaticFile(path, req, res) {
+		fs.stat(path, (err, stat) => {
+			const sendStream = () => {
+				res.writeHead(200, {
+					"Last-Modified": stat.mtime.toUTCString(),
+					"Content-Length": stat.size
+				});
+				const _fs = fs.createReadStream(path).on('ready', () => {
+					_fs.pipe(res);
+				}).on('error', (err) => {
+					_fs.destroy();
+					this.error(err, res);
+				}).on('end', () => {
+					_fs.destroy();
+					res.end();
+				});
+			};
+			if (err != null) {
+				this.error(err, res);
+				return;
+			}
+			stat.mtime.setMilliseconds(0);
+			const isc = req.headers["if-modified-since"];
+			if (isc != null) {
+				let tisc = new Date(isc);
+				// console.log("eq", tisc, stat.mtime, tisc.getTime() == stat.mtime.getTime());
+				if (tisc.getTime() == stat.mtime.getTime()) {
+					res.writeHead(304, { "Last-Modified": stat.mtime.toUTCString() }).end();
+					// res.setHeader("Last-Modified", stat.mtime.toUTCString());//.end();
+					// res.status(304).end();
+					return;
+				}
+			}
+			sendStream();
 		});
 	}
-	/**Deprecated */
-	// render(response, file, template, settings, model) {
-	// 	renderFile(file, template, settings, model).then(result => {
-	// 		response.writeHead(200, { "Content-Type": "text" });
-	// 		response.write(result);
-	// 		response.end();
-	// 	}).catch(err => {
-	// 		// console.log("inside err", err);
-	// 		if (err.code == 'ENOENT')
-	// 			this.error(new pejvakHttpError(404), response);
-	// 		else
-	// 			this.error(err, response);
-	// 	});
-	// }
 	bind(destination, source) {
 		this.binds.push({ dst: destination, src: source });
 		this.binds.sort(function (a, b) {
@@ -145,10 +160,15 @@ export class pejvakRequestListener {
 		});
 	}
 	error(err, res) {
-		if (!(err instanceof pejvakHttpError))
-			err = new pejvakHttpError(500, err);
-		res.writeHead(err.code, { "Content-Type": "text/html" });
-		res.write(`${err.code}: ${err.message}`);
-		res.end();
+		if (!(err instanceof pejvakHttpError)) {
+			if (err.code == "ENOENT")
+				err = new pejvakHttpError(404, err);
+			else
+				err = new pejvakHttpError(500, err);
+		}
+		// res.writeHead(err.code, { "Content-Type": "text/html" });
+		// res.write(`${err.code}: ${err.message}`);
+		// res.end();
+		res.status(err.code).send(`${err.code}: ${err.message}`).end();
 	}
 }
