@@ -29,14 +29,15 @@ export class pejvakRequestListener {
 			/**set global model object*/
 			res.model = {};
 
+			this.#reqType(req);
+			this.#runBefores(req, res);
 			req.body = "";
 			req.on("data", (chunk) => {
 				req.body += chunk;
-			});
-			req.on("close", () => {
+			}).on("close", () => {
 				// this.#runUses(req, res);
-				this.#reqType(req);
-				this.#runBefores(req, res);
+				// this.#reqType(req);
+				// this.#runBefores(req, res);
 				this.#runHandles(req, res);
 			});
 			res.on("error", (err) => {
@@ -46,19 +47,6 @@ export class pejvakRequestListener {
 			this.error(err, res);
 		}
 	}
-	/**Deprecated */
-	// #runUses(req, res) {
-	// 	// if (this.uses[req.method] !== undefined)
-	// 	for (const m in this.uses)
-	// 		if (m == req.method || m == "*")
-	// 			for (const i of this.uses[m])
-	// 				if (i.path == "*" || i.path == req.URL.pathname)
-	// 					i.fn.apply(i.fn, [req, res]);
-	// 	// for (let i of this.uses) {
-	// 	//     if (i.methods.indexOf(req.method) >= 0)
-	// 	//         i.fn.apply(i.fn, [req, res]);
-	// 	// }
-	// }
 	#reqType(req) {
 		req.handler = this.handlers[req.method]?.[req.URL.pathname];
 		if (req.handler) {
