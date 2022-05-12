@@ -31,15 +31,17 @@ export class pejvakRequestListener {
 
 			this.#reqType(req);
 			this.#runBefores(req, res);
-			req.body = "";
-			req.on("data", (chunk) => {
-				req.body += chunk;
-			}).on("close", () => {
-				// this.#runUses(req, res);
-				// this.#reqType(req);
-				// this.#runBefores(req, res);
-				this.#runHandles(req, res);
-			});
+			this.#runHandles(req, res);
+			// req.body = "";
+			// req.on("data", (chunk) => {
+			// 	req.body += chunk;
+			// });
+			// req.on("end", () => {
+			// 	// this.#runUses(req, res);
+			// 	// this.#reqType(req);
+			// 	// this.#runBefores(req, res);
+			// 	this.#runHandles(req, res);
+			// });
 			res.on("error", (err) => {
 				this.error(err, res);
 			});
