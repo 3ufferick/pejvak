@@ -1,17 +1,18 @@
 import http from "http"
 import { renderFile } from "./render.js"
-import mime from "./mimetypes.js"
+// import mime from "./mimetypes.js"
+import mime from "mime"
 
 export class pejvakResponse extends http.ServerResponse {
 	// initModel() {
-		// super();
-		// Object.defineProperty(this, "model", {
-		// 	value: {},
-		// 	enumerable: true,
-		// 	writable: true,
-		// 	configurable: true,
-		// });
-		// this._model = { b: "2" };
+	// super();
+	// Object.defineProperty(this, "model", {
+	// 	value: {},
+	// 	enumerable: true,
+	// 	writable: true,
+	// 	configurable: true,
+	// });
+	// this._model = { b: "2" };
 	// }
 	// model = {};
 	// _model = {};
@@ -21,10 +22,10 @@ export class pejvakResponse extends http.ServerResponse {
 	// set model(value) {
 	// 	this._model = value;
 	// }
-	setContentType(value) {
-		if (this.getHeader("content-type") == undefined)
-			this.setHeader("content-type", value);
-	}
+	// setContentType(value) {
+	// 	if (this.getHeader("content-type") == undefined)
+	// 		this.setHeader("content-type", value);
+	// }
 	status(statusCode) {
 		this.statusCode = statusCode;
 		return this;
@@ -32,13 +33,16 @@ export class pejvakResponse extends http.ServerResponse {
 	send(body) {
 		switch (typeof body) {
 			case "string":
-				this.setContentType(mime.find("html") + "; charset=utf-8");
+				// this.setContentType(mime.find("html") + "; charset=utf-8");
+				this.setHeader("Content-Type", mime.getType("html"));
 				break;
 			case "object":
 				if (Buffer.isBuffer(body))
-					this.setContentType(mime.find("bin"));
+					// this.setContentType(mime.find("bin"));
+					this.setHeader("Content-Type", mime.getType("bin"));
 				else {
-					this.setContentType(mime.find("json"));
+					// this.setContentType(mime.find("json"));
+					this.setHeader("Content-Type", mime.getType("json"));
 					body = JSON.stringify(body);
 				}
 				break;

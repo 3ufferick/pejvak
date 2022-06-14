@@ -5,5 +5,8 @@
   "main": "src/pejvak.js",
   "author": "rickali <rickali@tutanota.com>",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "mime": "^3.0.0"
+  }
 }

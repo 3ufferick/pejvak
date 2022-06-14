@@ -1,6 +1,6 @@
 import path from "path"
 import fs from "fs"
-
+import mime from "mime"
 import { pejvakHttpError } from "./errors.js"
 import pejvakRequest from "./request.js"
 import { pejvakResponse } from "./response.js"
@@ -109,10 +109,12 @@ export class pejvakRequestListener {
 	}
 	loadStaticFile(path, req, res) {
 		fs.stat(path, (err, stat) => {
+			// console.log("fs.stat", path, mime.getType(path));
 			const sendStream = () => {
 				res.writeHead(200, {
 					"Last-Modified": stat.mtime.toUTCString(),
-					"Content-Length": stat.size
+					"Content-Length": stat.size,
+					"Content-Type": mime.getType(path)
 				});
 				const _fs = fs.createReadStream(path).on('ready', () => {
 					_fs.pipe(res);
