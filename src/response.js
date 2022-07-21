@@ -58,7 +58,10 @@ export class pejvakResponse extends http.ServerResponse {
 	render(file, template, settings, model = {}) {
 		Object.assign(model, this.model);
 		renderFile(file, template, settings, model).then(result => {
-			this.status(200).send(result).end();
+			if (this.statusCode == null || this.statusCode != 200)
+				this.send(result).end();
+			else
+				this.status(200).send(result).end();
 		}).catch(err => {
 			this.emit("error", err);
 			// if (err.code == 'ENOENT')

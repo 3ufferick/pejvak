@@ -23,7 +23,7 @@ export function renderFile(file, template, settings, model) {
 						let result = data.toString();
 						let regexp = /{@(\w*)}/igm;
 						result = result.replace(regexp, function (match, g1) {
-							return parts[g1];
+							return parts[g1] == undefined ? "" : parts[g1];
 						});
 						/**move compile from file to template:
 						 * 1: higher performance due to reducing compile calls to just one time.
