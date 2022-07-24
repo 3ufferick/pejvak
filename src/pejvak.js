@@ -3,8 +3,7 @@ import https from "https"
 import fs from "fs"
 import { EventEmitter } from "events";
 import { pejvakRequestListener } from "./requestListener.js"
-import { type } from "os";
-// import { pejvakResponse } from "./response.js"
+import { pejvakHttpError } from "./errors.js"
 
 export default class pejvak extends EventEmitter {
 	server = undefined;
@@ -16,6 +15,7 @@ export default class pejvak extends EventEmitter {
 		super();
 		this.settings = settings;
 		this.requestListener = new pejvakRequestListener(this, routes, virtualPaths);
+		this.on("httpError", this.#defaultError);
 	}
 	start() {
 		this.server = http.createServer(this.requestListener.listener).listen(this.settings.port, () => {
@@ -41,9 +41,9 @@ export default class pejvak extends EventEmitter {
 				this.requestListener.handlers[method] = {};
 			if (Array.isArray(paths))
 				for (const path of paths)
-					this.requestListener.handlers[method][path] = { method: method, path: path, args:args, before: before, fn: fn };
+					this.requestListener.handlers[method][path] = { method: method, path: path, args: args, before: before, fn: fn };
 			else if (typeof paths === "string")
-				this.requestListener.handlers[method][paths] = { method: method, path: paths, args:args, before: before, fn: fn };
+				this.requestListener.handlers[method][paths] = { method: method, path: paths, args: args, before: before, fn: fn };
 		}
 		/**
 		 * handle(method, paths, fn)
@@ -62,14 +62,28 @@ export default class pejvak extends EventEmitter {
 		/**
 		 * handle(method, paths, args, before, fn)
 		 */
-		 if (arguments.length == 5 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
-		 && typeof arguments[2] == "object" && typeof arguments[3] == "function" && typeof arguments[4] == "function") {
-		 processPaths(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
-	 }
+		if (arguments.length == 5 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
+			&& typeof arguments[2] == "object" && typeof arguments[3] == "function" && typeof arguments[4] == "function") {
+			processPaths(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
+		}
 	}
 	before(fn) {
 		// console.log("app:before");
 		this.requestListener.befores.push(fn);
+	}
+	#defaultError(err, res) {
+		// if (!(err instanceof pejvakHttpError)) {
+		if (isNaN(err)) {
+			if (err.code == "ENOENT")
+				err = new pejvakHttpError(404, err);
+			else
+				err = new pejvakHttpError(500, err);
+		}
+		else
+			err = new pejvakHttpError(err);
+
+		res.status(err.code).send(`${err.code}: ${err.message}`).end();
+		// console.log("#defaultError", err);
 	}
 	//deprecated
 	// use(routes, fn) {

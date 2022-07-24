@@ -36,5 +36,5 @@ export default class pejvakRequest extends http.IncomingMessage {
 	  */
 	//  body: string;
     
-    error(error: any): void;
+   //  error(error: any): void;
 }

@@ -1,7 +1,6 @@
 import path from "path"
 import fs from "fs"
 import mime from "mime"
-import { pejvakHttpError } from "./errors.js"
 import pejvakRequest from "./request.js"
 import { pejvakResponse } from "./response.js"
 
@@ -42,11 +41,14 @@ export class pejvakRequestListener {
 			// 	// this.#runBefores(req, res);
 			// 	this.#runHandles(req, res);
 			// });
-			res.on("error", (err) => {
-				this.error(err, res);
+			// this.pejvak.on("httpError", (err, res) => {
+			// 	console.log("httpError 1", err);
+			// });
+			res.on("error", err => {
+				this.pejvak.emit("httpError", err, res)
 			});
 		} catch (err) {
-			this.error(err, res);
+			this.pejvak.emit("httpError", err, res)
 		}
 	}
 	#reqType(req) {
@@ -101,8 +103,10 @@ export class pejvakRequestListener {
 			if (rep == req.URL.pathname)
 				rep = this.pejvak.settings.www + req.URL.pathname;
 
-			if (this.pejvak.settings.forbiden.includes(path.extname(rep)))
-				throw new pejvakHttpError(403);
+			if (this.pejvak.settings.forbiden.includes(path.extname(rep))) {
+				this.pejvak.emit("httpError", 403, res);
+				return;
+			}
 
 			this.loadStaticFile(path.normalize(rep), req, res);
 		}
@@ -120,14 +124,17 @@ export class pejvakRequestListener {
 					_fs.pipe(res);
 				}).on('error', (err) => {
 					_fs.destroy();
-					this.error(err, res);
+					this.pejvak.emit("httpError", err, res);
 				}).on('end', () => {
 					_fs.destroy();
 					res.end();
 				});
 			};
 			if (err != null) {
-				this.error(err, res);
+				if (err.code == "ENOENT")
+					this.pejvak.emit("httpError", 404, res);
+				else
+					this.pejvak.emit("httpError", err, res);
 				return;
 			}
 			stat.mtime.setMilliseconds(0);
@@ -150,17 +157,5 @@ export class pejvakRequestListener {
 		this.binds.sort(function (a, b) {
 			return b.dst.length - a.dst.length;
 		});
-	}
-	error(err, res) {
-		if (!(err instanceof pejvakHttpError)) {
-			if (err.code == "ENOENT")
-				err = new pejvakHttpError(404, err);
-			else
-				err = new pejvakHttpError(500, err);
-		}
-		// res.writeHead(err.code, { "Content-Type": "text/html" });
-		// res.write(`${err.code}: ${err.message}`);
-		// res.end();
-		res.status(err.code).send(`${err.code}: ${err.message}`).end();
 	}
 }
