@@ -37,6 +37,7 @@ export default class pejvak extends EventEmitter {
 	}
 	handle() {
 		const processPaths = (method, paths, args, before, fn) => {
+			// console.log("p.paths", method, paths);
 			if (this.requestListener.handlers[method] == undefined)
 				this.requestListener.handlers[method] = {};
 			if (Array.isArray(paths))
@@ -48,21 +49,21 @@ export default class pejvak extends EventEmitter {
 		/**
 		 * handle(method, paths, fn)
 		 */
-		if (arguments.length == 3 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
+		if (arguments.length == 3 && typeof arguments[0] == "string" && (typeof arguments[1] == "string" || Array.isArray(arguments[1]))
 			&& typeof arguments[2] == "function") {
 			processPaths(arguments[0], arguments[1], null, null, arguments[2]);
 		}
 		/**
 		 * handle(method, paths, before, fn)
 		 */
-		if (arguments.length == 4 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
+		if (arguments.length == 4 && typeof arguments[0] == "string" && (typeof arguments[1] == "string" || Array.isArray(arguments[1]))
 			&& typeof arguments[2] == "function" && typeof arguments[3] == "function") {
 			processPaths(arguments[0], arguments[1], null, arguments[2], arguments[3]);
 		}
 		/**
 		 * handle(method, paths, args, before, fn)
 		 */
-		if (arguments.length == 5 && typeof arguments[0] == "string" && typeof arguments[1] == "string"
+		if (arguments.length == 5 && typeof arguments[0] == "string" && (typeof arguments[1] == "string" || Array.isArray(arguments[1]))
 			&& typeof arguments[2] == "object" && typeof arguments[3] == "function" && typeof arguments[4] == "function") {
 			processPaths(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]);
 		}
