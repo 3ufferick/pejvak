@@ -31,6 +31,8 @@ export class pejvakResponse extends http.ServerResponse {
 		return this;
 	}
 	send(body) {
+		if (this.writableEnded == true)
+			return;
 		switch (typeof body) {
 			case "string":
 				// this.setContentType(mime.find("html") + "; charset=utf-8");
@@ -56,6 +58,9 @@ export class pejvakResponse extends http.ServerResponse {
 	//     return JSON.stringify(body);
 	// }
 	render(file, template, settings, model = {}) {
+		if (this.writableEnded == true)
+			return;
+		// console.log("render", this.req.handler);
 		Object.assign(model, this.model);
 		return renderFile(file, template, settings, model).then(result => {
 			if (this?.statusCode != 200)
