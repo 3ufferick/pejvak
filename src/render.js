@@ -56,7 +56,7 @@ function compile(code, context) {
 		}
 		//---------برای کامنت های اچ تی ام ال مشکل ساز میشد--------------
 		// else if (l.substr(0, 4) != '<!--')
-		else if (l.substr(0, 5) != '<@--')
+		else //if (l.substr(0, 5) != '<@--')
 			lines2 += `ret+=\`${i.replace(/`/g, "&#96;")}\n\`;\n`;
 	}
 	vm.runInNewContext(lines2, context);
