@@ -1,12 +1,22 @@
 {
-  "name": "pejvak",
-  "version": "1.0.0",
-  "description": "simple web server",
-  "main": "src/pejvak.js",
-  "author": "rickali <rickali@tutanota.com>",
-  "license": "ISC",
-  "type": "module",
-  "dependencies": {
-    "mime": "^3.0.0"
-  }
+	"name": "pejvak",
+	"version": "1.0.0",
+	"description": "pejvak is a simple web server with minimum dependencies",
+	"main": "src/pejvak.js",
+	"author": "rickali <rickali@tutanota.com>",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rickali137/pejvak.git"
+	},
+	"homepage": "https://github.com/rickali137/pejvak",
+	"keywords": [
+		"nodejs",
+		"webserver",
+		"server"
+	],
+	"license": "ISC",
+	"type": "module",
+	"dependencies": {
+		"mime": "^3.0.0"
+	}
 }
