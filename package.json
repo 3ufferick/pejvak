@@ -1,7 +1,7 @@
 {
 	"name": "pejvak",
-	"version": "1.0.0",
-	"description": "pejvak is a simple web server with minimum dependencies",
+	"version": "1.0.1",
+	"description": "pejvak is a web framework with minimum dependencies",
 	"main": "src/pejvak.js",
 	"author": "rickali <rickali@tutanota.com>",
 	"repository": {
@@ -11,8 +11,10 @@
 	"homepage": "https://github.com/rickali137/pejvak",
 	"keywords": [
 		"nodejs",
-		"webserver",
-		"server"
+		"web",
+		"server",
+		"template",
+		"framework"
 	],
 	"license": "ISC",
 	"type": "module",

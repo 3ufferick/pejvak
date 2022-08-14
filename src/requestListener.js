@@ -24,7 +24,8 @@ export class pejvakRequestListener {
 		try {
 			Object.setPrototypeOf(req, pejvakRequest.prototype);
 			Object.setPrototypeOf(res, pejvakResponse.prototype);
-
+			res.pejvak = this.pejvak;
+			
 			/**set global model object*/
 			res.model = {};
 
@@ -110,7 +111,7 @@ export class pejvakRequestListener {
 			if (rep == req.URL.pathname)
 				rep = this.pejvak.settings.www + req.URL.pathname;
 
-			if (this.pejvak.settings.forbiden.includes(path.extname(rep))) {
+			if (this.pejvak.settings.forbidenExtensions.includes(path.extname(rep))) {
 				this.pejvak.emit("httpError", 403, res);
 				return;
 			}

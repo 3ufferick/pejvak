@@ -57,12 +57,12 @@ export class pejvakResponse extends http.ServerResponse {
 	//     this.#setContentType(mime.find("json"));
 	//     return JSON.stringify(body);
 	// }
-	render(file, template, settings, model = {}) {
+	render(file, template, model = {}) {
 		if (this.writableEnded == true)
 			return;
 		// console.log("render", this.req.handler);
 		Object.assign(model, this.model);
-		return renderFile(file, template, settings, model).then(result => {
+		return renderFile(file, template, this.pejvak.settings, model).then(result => {
 			if (this?.statusCode != 200)
 				this.send(result).end();
 			else

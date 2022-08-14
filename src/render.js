@@ -3,7 +3,7 @@ import * as vm from "vm";
 
 export function renderFile(file, template, settings, model) {
 	return new Promise(function (resolve, reject) {
-		loadFile(`${settings.www}/${file}`)
+		loadFile(`${settings.view}/${file}`)
 			.then(data => {
 				const render = data.toString();
 				let regexp = /@part:(\w*)\s*{([\s\S]*)}\s*part:\1;/igm;
