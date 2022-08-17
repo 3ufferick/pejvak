@@ -1,5 +1,5 @@
 import path from "path"
-import fs from "fs"
+import fs, { fstatSync } from "fs"
 import mime from "mime"
 import pejvakRequest from "./request.js"
 import { pejvakResponse } from "./response.js"
@@ -17,34 +17,26 @@ export class pejvakRequestListener {
 		this.pejvak = pejvak;
 		for (const i in routes)
 			this.handlers["GET"][i] = [routes[i].file, routes[i].template];
-		for (const v in virtualPaths)
-			this.bind(v, virtualPaths[v]);
+		for (const v in virtualPaths) {
+			// this.bind(v, virtualPaths[v]);
+			this.binds.push({ dst: v, src: virtualPaths[v] });
+			this.binds.sort(function (a, b) {
+				return b.dst.length - a.dst.length;
+			});
+		}
 	}
 	listener = (req, res) => {
 		try {
 			Object.setPrototypeOf(req, pejvakRequest.prototype);
 			Object.setPrototypeOf(res, pejvakResponse.prototype);
 			res.pejvak = this.pejvak;
-			
+
 			/**set global model object*/
 			res.model = {};
 
 			this.#reqType(req);
 			this.#runBefores(req, res);
 			this.#runHandles(req, res);
-			// req.body = "";
-			// req.on("data", (chunk) => {
-			// 	req.body += chunk;
-			// });
-			// req.on("end", () => {
-			// 	// this.#runUses(req, res);
-			// 	// this.#reqType(req);
-			// 	// this.#runBefores(req, res);
-			// 	this.#runHandles(req, res);
-			// });
-			// this.pejvak.on("httpError", (err, res) => {
-			// 	console.log("httpError 1", err);
-			// });
 			res.on("error", err => {
 				this.pejvak.emit("httpError", err, res)
 			});
@@ -121,7 +113,6 @@ export class pejvakRequestListener {
 	}
 	loadStaticFile(path, req, res) {
 		fs.stat(path, (err, stat) => {
-			// console.log("fs.stat", path, mime.getType(path));
 			const sendStream = () => {
 				res.writeHead(200, {
 					"Last-Modified": stat.mtime.toUTCString(),
@@ -145,25 +136,26 @@ export class pejvakRequestListener {
 					this.pejvak.emit("httpError", err, res);
 				return;
 			}
+			if (!stat.isFile()) {
+				this.pejvak.emit("httpError", 404, res);
+				return;
+			}
 			stat.mtime.setMilliseconds(0);
 			const isc = req.headers["if-modified-since"];
 			if (isc != null) {
 				let tisc = new Date(isc);
-				// console.log("eq", tisc, stat.mtime, tisc.getTime() == stat.mtime.getTime());
 				if (tisc.getTime() == stat.mtime.getTime()) {
 					res.writeHead(304, { "Last-Modified": stat.mtime.toUTCString() }).end();
-					// res.setHeader("Last-Modified", stat.mtime.toUTCString());//.end();
-					// res.status(304).end();
 					return;
 				}
 			}
 			sendStream();
 		});
 	}
-	bind(destination, source) {
-		this.binds.push({ dst: destination, src: source });
-		this.binds.sort(function (a, b) {
-			return b.dst.length - a.dst.length;
-		});
-	}
+	// bind(destination, source) {
+	// 	this.binds.push({ dst: destination, src: source });
+	// 	this.binds.sort(function (a, b) {
+	// 		return b.dst.length - a.dst.length;
+	// 	});
+	// }
 }

@@ -11,7 +11,7 @@ export default class pejvak extends EventEmitter {
 	request;
 	response;
 	requestListener;
-	constructor(routes, virtualPaths, settings) {
+	constructor(settings = {}, routes = {}, virtualPaths = {}) {
 		super();
 		this.settings = settings;
 		this.requestListener = new pejvakRequestListener(this, routes, virtualPaths);

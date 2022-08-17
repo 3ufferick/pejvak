@@ -22,19 +22,7 @@ export default class pejvakRequest extends http.IncomingMessage {
     get cookies(): Object;
     
     /**
-     * the object which should handle the request object
-     */
-    handler: Any;
-
-    /**
      * the type of handler object
      */
     handlerType: ["function", "render", "handlerStatic", "static"];
-
-	 /**
-	  * the body of request object
-	  */
-	//  body: string;
-    
-   //  error(error: any): void;
 }

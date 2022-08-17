@@ -27,7 +27,7 @@ export function renderFile(file, template, settings, model) {
 						});
 						/**move compile from file to template:
 						 * 1: higher performance due to reducing compile calls to just one time.
-						 * 2+ rendering global model object also for tempate file */
+						 * 2: rendering global model object also for tempate file */
 						const context = {
 							model: model,
 							ret: ""
@@ -61,16 +61,3 @@ function compile(code, context) {
 	}
 	vm.runInNewContext(lines2, context);
 }
-// export function renderHTML(response, file, template, settings, model) {
-// 	return renderFile(file, template, settings, model)
-// 		.then(result => {
-// 			return Promise.resolve(result);
-// 		})
-// 		.catch(err => {
-// 			return Promise.reject(err);
-// 		});
-// }
-
-// http.ServerResponse.prototype.renderHTML = function (file, template, settings, model) {
-// 	renderHTML(this, file, template, settings, model);
-// };

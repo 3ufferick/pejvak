@@ -4,46 +4,22 @@ import { renderFile } from "./render.js"
 import mime from "mime"
 
 export class pejvakResponse extends http.ServerResponse {
-	// initModel() {
-	// super();
-	// Object.defineProperty(this, "model", {
-	// 	value: {},
-	// 	enumerable: true,
-	// 	writable: true,
-	// 	configurable: true,
-	// });
-	// this._model = { b: "2" };
-	// }
-	// model = {};
-	// _model = {};
-	// get model() {
-	// 	return this._model;// ?? {};
-	// }
-	// set model(value) {
-	// 	this._model = value;
-	// }
-	// setContentType(value) {
-	// 	if (this.getHeader("content-type") == undefined)
-	// 		this.setHeader("content-type", value);
-	// }
 	status(statusCode) {
 		this.statusCode = statusCode;
 		return this;
 	}
 	send(body) {
-		if (this.writableEnded == true)
-			return;
+		if (this.writableEnded == true || this.headersSent == true)
+			return this;
+
 		switch (typeof body) {
 			case "string":
-				// this.setContentType(mime.find("html") + "; charset=utf-8");
 				this.setHeader("Content-Type", mime.getType("html"));
 				break;
 			case "object":
 				if (Buffer.isBuffer(body))
-					// this.setContentType(mime.find("bin"));
 					this.setHeader("Content-Type", mime.getType("bin"));
 				else {
-					// this.setContentType(mime.find("json"));
 					this.setHeader("Content-Type", mime.getType("json"));
 					body = JSON.stringify(body);
 				}
@@ -53,26 +29,18 @@ export class pejvakResponse extends http.ServerResponse {
 		this.write(body);
 		return this;
 	}
-	// json(body) {
-	//     this.#setContentType(mime.find("json"));
-	//     return JSON.stringify(body);
-	// }
 	render(file, template, model = {}) {
 		if (this.writableEnded == true)
 			return;
-		// console.log("render", this.req.handler);
 		Object.assign(model, this.model);
-		return renderFile(file, template, this.pejvak.settings, model).then(result => {
+		//return 
+		renderFile(file, template, this.pejvak.settings, model).then(result => {
 			if (this?.statusCode != 200)
 				this.send(result).end();
 			else
 				this.status(200).send(result).end();
 		}).catch(err => {
 			this.emit("error", err);
-			// if (err.code == 'ENOENT')
-			//     this.emit("error", new pejvakHttpError(404));
-			// else
-			//     this.emit("error", err);
 		});
 	}
 	setCookie(name, value, options = {}) {

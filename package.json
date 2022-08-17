@@ -1,6 +1,6 @@
 {
 	"name": "pejvak",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"description": "pejvak is a web framework with minimum dependencies",
 	"main": "src/pejvak.js",
 	"author": "rickali <rickali@tutanota.com>",

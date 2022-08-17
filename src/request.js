@@ -42,7 +42,4 @@ export default class pejvakRequest extends http.IncomingMessage {
         }
         return this._cookies;
     }
-    // query(name) {
-    //     return this.URL.searchParams.get(name);
-    // }
 }
