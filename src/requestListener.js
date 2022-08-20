@@ -52,7 +52,7 @@ export class pejvakRequestListener {
 				req.handlerType = "function";
 			//**handlers loaded from routes file with template */
 			else if (typeof req.handler === typeof []) {
-				if (req.handler[0].split('.')[1].toLowerCase() == this.pejvak.settings.renderFileExtension)
+				if (req.handler[0].endsWith(this.pejvak.settings.renderFileExtension))
 					req.handlerType = "autoRender";
 				else
 					req.handlerType = "autoStatic";
