@@ -43,7 +43,7 @@ ProjectFolder
 |  |__main.template
 |
 |__www
-|  |__...
+|  |__static.html
 |  |__...
 |
 |__index.js
@@ -71,10 +71,10 @@ const settings = {
 }
 ```
 ### routes (2nd parameter)
-you can set some static routes when you don't need to run a block of code to render. for example assume that you have a static `about` page and a simple `static html`. then you can set the routing path for them at the initialize point of pejvak server:
+you can set some static routes when you don't need to run a block of code to render. for example assume that you have a static `rendercode` page and a simple `static html`. then you can set the routing path for them at the initialize point of pejvak server:
 ```js
 const routes = {
-  "/about": { file: "/about.pejvakhtml", template: "/main.template" },
+  "/rendercode": { file: "/rendercode.pejvakhtml", template: "/main.template" },
   "/static": { file: "/static.html" },
 };
 ```
@@ -103,7 +103,7 @@ const vritualpaths = {
 
 <body>
   <a class="menu" href="/">Home</a>
-  <a class="menu" href="/about">About</a>
+  <a class="menu" href="/rendercode">render code</a>
   <a class="menu" href="/static">static</a>
   {@content}
   {@script}
@@ -147,7 +147,7 @@ const vritualpaths = {
 ```
 ```html
 <!-- rendercode.pejvakhtml -->
-@part:title {about page} part:title;
+@part:title {rendercode page} part:title;
 @part:head
 {
 <style>
@@ -168,7 +168,6 @@ const vritualpaths = {
    <br/>
   @}
 } part:content;
-
 ```
 probably you have noticed some `{@partname}` tag style in the above code. this format is used in the template designing feature of pejvak and will be explained later ([Template structure](#template-structure)).
 
