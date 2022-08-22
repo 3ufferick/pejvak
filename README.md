@@ -50,6 +50,7 @@ ProjectFolder
 |__package-lock.json
 |__package.json
 ```
+### example project files:
 `pejvak constructor` has 3 parameters.
 * settings
 * routes
@@ -85,7 +86,38 @@ const vritualpaths = {
   "/js/jquery": "node_modules/jquery/dist",
 }
 ```
-### example project files:
+complete index.js file should be like this:
+```js
+/** index.js */
+import pejvak from "pejvak"
+
+const settings = {
+  www: "./www",
+  view: "./view",
+  port: 80,
+  renderFileExtension: ".pejvakhtml",
+  forbidenExtensions: [".pejvakhtml"],
+};
+const routes = {
+  "/rendercode": { file: "/rendercode.pejvakhtml", template: "/main.template" },
+  "/static": { file: "/static.html" },
+};
+const vritualpaths = {
+  "/js/jquery": "node_modules/jquery/dist",
+};
+
+let srv = new pejvak(settings, routes, vritualpaths);
+
+srv.handle("GET", "/", (req, res) => {
+  res.render("home.pejvakhtml", "main.template", { user: "rick", role: "admin" });
+});
+
+srv.handle("POST", "/gettime", (req, res) => {
+  res.send(new Date().toLocaleTimeString()).end();
+});
+
+srv.start();
+```
 ```html
 <!-- main.template -->
 <!doctype html>
@@ -172,38 +204,6 @@ const vritualpaths = {
 probably you have noticed some `{@partname}` tag style in the above code. this format is used in the template designing feature of pejvak and will be explained later ([Template structure](#template-structure)).
 
 also `@` char at the beginning of lines (other than parts) means that the js code is going to render at the server side.
-
-```js
-/** index.js */
-import pejvak from "pejvak"
-
-const settings = {
-  www: "./www",
-  view: "./view",
-  port: 80,
-  renderFileExtension: ".pejvakhtml",
-  forbidenExtensions: [".pejvakhtml"],
-};
-const routes = {
-  "/rendercode": { file: "/rendercode.pejvakhtml", template: "/main.template" },
-  "/static": { file: "/static.html" },
-};
-const vritualpaths = {
-  "/js/jquery": "node_modules/jquery/dist",
-};
-
-let srv = new pejvak(settings, routes, vritualpaths);
-
-srv.handle("GET", "/", (req, res) => {
-  res.render("home.pejvakhtml", "main.template", { user: "rick", role: "admin" });
-});
-
-srv.handle("POST", "/gettime", (req, res) => {
-  res.send(new Date().toLocaleTimeString()).end();
-});
-
-srv.start();
-```
 ## Template structure
 in a `.template` file you can define dynamic parts in the format of `{@partname}`. you can choose any desired name. 
 ```html
