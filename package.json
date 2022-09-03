@@ -2,7 +2,7 @@
 	"name": "pejvak",
 	"version": "1.0.5",
 	"description": "pejvak is a web framework with minimum dependencies",
-	"main": "src/pejvak.js",
+	"main": "index.js",
 	"author": "rickali <rickali@tutanota.com>",
 	"repository": {
 		"type": "git",
