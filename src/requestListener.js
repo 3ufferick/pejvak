@@ -3,6 +3,7 @@ import fs, { fstatSync } from "fs"
 import mime from "mime"
 import pejvakRequest from "./request.js"
 import { pejvakResponse } from "./response.js"
+import { promises } from "dns"
 
 export class pejvakRequestListener {
 	pejvak;
@@ -35,12 +36,36 @@ export class pejvakRequestListener {
 			res.model = {};
 
 			this.#reqType(req);
-			this.#runBefores(req, res);
-			this.#runHandles(req, res);
+			let _normalBefores = this.befores.filter(x => {
+				return x.constructor.name != "AsyncFunction"
+			});
+			let _asyncBefores = this.befores.filter(x => {
+				if (x.constructor.name == "AsyncFunction")
+					return x.bind(null, req, res)();
+			});
+			// this.#runBefores(_normalBefores, rإeq, res);
+			_normalBefores.map(i => {
+				if (res.writableEnded == true)
+					return;
+				i.apply(null, [req, res]);
+			});
+			// if (_normalBefores.length > 0)
+			// 	for (let i of _normalBefores) {
+			// 		if (res.writableEnded == true)
+			// 			return;
+			// 		i.apply(null, [req, res]);
+			// 	}
+			if (_asyncBefores.length > 0)
+				Promise.all(_asyncBefores).then(() => {
+					this.#runHandles(req, res);
+				});
+			else
+				this.#runHandles(req, res);
 			res.on("error", err => {
 				this.pejvak.emit("httpError", err, res)
 			});
 		} catch (err) {
+			console.log("err", err)
 			this.pejvak.emit("httpError", err, res)
 		}
 	}
@@ -62,8 +87,9 @@ export class pejvakRequestListener {
 		else
 			req.handlerType = "static";
 	}
-	#runBefores(req, res) {
-		for (let i of this.befores) {
+	#runBefores(normalBefores, req, res) {
+		for (let i of normalBefores) {
+			// for (let i of this.befores) {
 			if (res.writableEnded == true)
 				return;
 			i.apply(null, [req, res]);
