@@ -41,22 +41,11 @@ export class pejvakRequestListener {
 			});
 			let _asyncBefores = this.befores.filter(x => {
 				if (x.constructor.name == "AsyncFunction")
-					return x.bind(null, req, res)();
+					return x;
 			});
-			// this.#runBefores(_normalBefores, rإeq, res);
-			_normalBefores.map(i => {
-				if (res.writableEnded == true)
-					return;
-				i.apply(null, [req, res]);
-			});
-			// if (_normalBefores.length > 0)
-			// 	for (let i of _normalBefores) {
-			// 		if (res.writableEnded == true)
-			// 			return;
-			// 		i.apply(null, [req, res]);
-			// 	}
+			this.#runBefores(_normalBefores, req, res);
 			if (_asyncBefores.length > 0)
-				Promise.all(_asyncBefores).then(() => {
+				Promise.all(_asyncBefores.map(f => f(req,res))).then(() => {
 					this.#runHandles(req, res);
 				});
 			else
